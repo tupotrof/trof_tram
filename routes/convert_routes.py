@@ -4,7 +4,7 @@ import getopt
 import io
 import extract_stops
 
-OUTPUT = "all_stops.kxt"
+OUTPUT = "../resources/all_stops.kxt"
 
 
 def distance(a, b):

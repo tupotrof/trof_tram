@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import io
 
+
 def get_stops(file):
     """
         Позволяет извлечь информацию об остановках из файла

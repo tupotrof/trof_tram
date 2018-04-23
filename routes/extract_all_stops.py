@@ -7,7 +7,7 @@ import re
 from urllib.request import urlopen
 
 LINK = "http://online.ettu.ru"
-OUTPUT = "all_stops_raw.kxt"
+OUTPUT = "../resources/all_stops_raw.kxt"
 
 stops_request = re.compile('<a href="/station/.*?</a>')
 stop_numbers = dict()
