@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import io
 
-OUTPUT = "all_stops.kxt"
-
-
-def get_stops(file=OUTPUT):
+def get_stops(file):
+    """
+        Позволяет извлечь информацию об остановках из файла
+        TODO: починить импорты и вынести её в отдельный файл
+    """
     num_dict = dict()
     nam_dict = dict()
     with io.open(file, 'r', encoding='utf=8') as f:
