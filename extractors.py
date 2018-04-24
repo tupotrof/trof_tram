@@ -24,7 +24,8 @@ class StopExtractor:
 
     def update(self):
         try:
-            page = urllib.request.urlopen(LINK + str(self.stop_number)).read().decode('utf-8', errors='ignore')
+            page = urllib.request.urlopen(LINK + str(self.stop_number)).read()\
+                .decode('utf-8', errors='ignore')
         except urllib.error.URLError:
             return
         self.closest_trams = []
@@ -55,12 +56,12 @@ class RouteExtractor:
             trams = []
             print('Processing:', s)
             try:
-                page = urllib.request.urlopen(LINK + s).read().decode('utf-8', errors='ignore')
+                page = urllib.request.urlopen(LINK + s).read()\
+                    .decode('utf-8', errors='ignore')
             except urllib.error.URLError:
                 print("Network error")
                 return False
             # print(page)
-            # re_list = re.findall('<div>\s+<div style="width: .*?</div>\s+</div>', page)
             re_list = re.findall(RE, page)
             # print(re_list)
             for line in re_list:
@@ -69,6 +70,13 @@ class RouteExtractor:
             # print(trams)
             self.tram_d[s] = trams
         return True
+
+    def get_next_stop(self, stop):
+        i = self.stops.index(stop)
+        if i == len(self.stops) - 1:
+            return self.stops[0]
+        else:
+            return self.stops[i + 1]
 
     def __str__(self, mode='numbers'):
         if mode == 'numbers':
@@ -85,11 +93,15 @@ class TotalExtractor:
     def __init__(self):
         self.all_stops_numbers = extract_stops.get_stops(STOPS)[0].keys()
         self.all_trams = dict()
+        self.update()
+
+    def update(self):
         for stop in self.all_stops_numbers:
             trams = []
             print('Processing:', stop, end="... ")
             try:
-                page = urllib.request.urlopen(LINK + stop).read().decode('utf-8', errors='ignore')
+                page = urllib.request.urlopen(LINK + stop).read()\
+                    .decode('utf-8', errors='ignore')
             except urllib.error.URLError:
                 print("Network error")
                 continue

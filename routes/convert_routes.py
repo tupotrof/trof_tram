@@ -6,6 +6,14 @@ import extract_stops
 
 OUTPUT = "../resources/all_stops.kxt"
 
+REPLACES = {
+    '1-й км': '1-й километр',
+    'педуниверситет': 'педагогический университет',
+    'виз-бульвар': 'верх-исетский бульвар',
+    'рижский пер.': 'пер. рижский',
+    'куйбышева (ул. луначарского)': 'куйбышева-луначарского',
+}
+
 
 def distance(a, b):
     """
@@ -13,16 +21,18 @@ def distance(a, b):
     """
     n, m = len(a), len(b)
     if n > m:
-        # Make sure n <= m, to use O(min(n,m)) space
         a, b = b, a
         n, m = m, n
 
-    current_row = range(n+1)  # Keep current and previous row, not entire matrix
-    for i in range(1, m+1):
-        previous_row, current_row = current_row, [i]+[0]*n
-        for j in range(1, n+1):
-            add, delete, change = previous_row[j]+1, current_row[j-1]+3, previous_row[j-1]
-            if a[j-1] != b[i-1]:
+    current_row = range(n + 1)
+    for i in range(1, m + 1):
+        previous_row, current_row = current_row, [i] + [0] * n
+        for j in range(1, n + 1):
+            add, delete, change = \
+                previous_row[j] + 1, \
+                current_row[j - 1] + 3, \
+                previous_row[j - 1]
+            if a[j - 1] != b[i - 1]:
                 change += 1
             current_row[j] = min(add, delete, change)
 
@@ -31,7 +41,7 @@ def distance(a, b):
 
 def main(argv):
     inputfile = ''
-    outputfile = ''
+    outputdir = ''
     rev = True
     try:
         opts, args = getopt.getopt(argv, "hi:o:r")
@@ -45,16 +55,22 @@ def main(argv):
         elif opt == "-i":
             inputfile = arg
         elif opt == "-o":
-            outputfile = arg
+            outputdir = arg
 
     stops = extract_stops.get_stops(OUTPUT)
     data = []
     with io.open(inputfile, 'r', encoding='utf-8') as f:
+        outputfile = outputdir + f.readline().rstrip('\n') + '.kxt'
         for line in f:
             line = line.lower().rstrip('\n')
             if line == '[reverse]':  # типа чтобы остановки не переставлять
                 rev = False
                 continue
+            if line in REPLACES.keys():
+                print('<!> Item "', line, '" detected as "', REPLACES[line],
+                      '" <!>', sep='')
+                line = REPLACES[line]
+            line = line.split(' (')[0]
             s = dict.get(stops[1], line)
             if s is None:  # не нашли остановку, ищем самую похожую
                 best_siml = 1000000
@@ -64,10 +80,11 @@ def main(argv):
                     if seq < best_siml:
                         best_siml = seq
                         best_str = stop
-                print('<!> Item "', line, '" detected as "', best_str, '" <!>', sep='')
+                print('<!> Item "', line, '" detected as "',
+                      best_str, '" <!>', sep='')
                 s = dict.get(stops[1], best_str)
                 if s is None:
-                    print('Not found: ', line)  # все равно не нашли - значит попа
+                    print('Not found: ', line)
             data.append(s)
             # print(s)
     f.close()
@@ -84,7 +101,7 @@ def main(argv):
             prev_stops.append(stop_name[0][1][0])
             started = True
         else:
-            all_pos_sos = []  # все остановки из которых можно попасть в предыдущюю
+            all_pos_sos = []
             for stop in stop_name:
                 if len(stop[1]) > 1:
                     for kok in stop[1][1]:
@@ -94,7 +111,8 @@ def main(argv):
             if all_pos_sos:
                 route.append(all_pos_sos)
             else:  # если в остановку не одна не ведет, чтото пошло не так
-                print("\nErr\nNot connected: ", stop_name, '\n\n Tb: ', prev_stops, '\n\n', route)
+                print("\nErr\nNot connected: ", stop_name, '\n\n Tb: ',
+                      prev_stops, '\n\n', route)
                 return None
         if len(prev_stops) > 11:  # большая борода, хз как побрить
             prev_stops.pop(0)
@@ -102,7 +120,7 @@ def main(argv):
     number_route.append(route[0][0][0])  # начинаем собирать маршрут
     for i in range(1, len(route) - 1):
         # print(route[i], end=' ')
-        if len(route[i]) > 1:  # опа, у нас неоднозначность, ну терь мы знаем ОТКУДА мы приехали
+        if len(route[i]) > 1:  # опа, у нас неоднозначность
             dis = False
             for k in range(i + 1, len(route) - 1):
                 next_stop = route[k][0][1][0]
