@@ -17,10 +17,11 @@ RE = re.compile('<div>\s+<div style="width: .*?<b>(.*?)</b>.*?'
 
 
 class StopExtractor:
-    def __init__(self, stop):
+    def __init__(self, stop, upd=False):
         self.stop_number = stop
         self.closest_trams = []
-        self.update()
+        if upd:
+            self.update()
 
     def update(self):
         try:
@@ -38,7 +39,7 @@ class StopExtractor:
 
 
 class RouteExtractor:
-    def __init__(self, num):
+    def __init__(self, num, upd=False):
         self.route_number = num
         self.stops = []
         self.filename = "resources/number_routes/" + num + ".kxt"
@@ -46,8 +47,8 @@ class RouteExtractor:
             for line in f:
                 self.stops.append(line.split('|')[0])
         self.tram_d = dict()
-        print(self.stops)
-        self.update()
+        if upd:
+            self.update()
         # print(self.tram_d)
 
     def update(self):
@@ -71,6 +72,17 @@ class RouteExtractor:
             self.tram_d[s] = trams
         return True
 
+    def take_from_total(self, total):
+        if not isinstance(total, TotalExtractor):
+            return False
+        for s in self.stops:
+            trams = []
+            for line in total.all_trams[s]:
+                if line[0] == self.route_number:
+                    trams.append(line)
+            self.tram_d[s] = trams
+        return True
+
     def get_next_stop(self, stop):
         i = self.stops.index(stop)
         if i == len(self.stops) - 1:
@@ -90,10 +102,11 @@ class RouteExtractor:
 
 
 class TotalExtractor:
-    def __init__(self):
+    def __init__(self, upd=False):
         self.all_stops_numbers = extract_stops.get_stops(STOPS)[0].keys()
         self.all_trams = dict()
-        self.update()
+        if upd:
+            self.update()
 
     def update(self):
         for stop in self.all_stops_numbers:
