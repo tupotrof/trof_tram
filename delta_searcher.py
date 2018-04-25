@@ -6,14 +6,14 @@ def search(stg):
         stop_pool = stg.tram_d
         prev = stop_pool[stg.stops[-2]]
         result = dict()
-        print(stg.route_number, end=" : ")
+        # print(stg.route_number, end=" : ")
         for stop in stop_pool:
             trams = []
             for i in prev:
                 for j in stop_pool[stop]:
                     trams.append(int(j[2]) - int(i[2]))
             max_time = 100000
-            print(trams, end="; ")
+            # print(trams, end="; ")
             for f in trams:
                 if max_time > f > 0:
                     max_time = f
@@ -22,7 +22,7 @@ def search(stg):
             else:
                 result[stop] = None
             prev = stop_pool[stop]
-        print()
+        # print()
         return result
     else:
         return None
@@ -45,7 +45,6 @@ def main():
                     all_deltas[kok] = []
                 all_deltas[kok].append(result[stop])
     print(all_deltas)
-
 
 
 if __name__ == '__main__':

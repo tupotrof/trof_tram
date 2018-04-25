@@ -6,7 +6,7 @@ import re
 import urllib
 from urllib.error import URLError
 from urllib.request import urlopen
-from tram.routes import extract_stops
+from .routes import extract_stops
 
 LINK = "http://online.ettu.ru/station/"
 STOPS = "resources/all_stops.kxt"
@@ -55,12 +55,12 @@ class RouteExtractor:
         self.tram_d = dict()
         for s in self.stops:
             trams = []
-            print('Processing:', s)
+            # print('Processing:', s)
             try:
                 page = urllib.request.urlopen(LINK + s).read()\
                     .decode('utf-8', errors='ignore')
             except urllib.error.URLError:
-                print("Network error")
+                # print("Network error")
                 return False
             # print(page)
             re_list = re.findall(RE, page)
@@ -109,9 +109,10 @@ class TotalExtractor:
             self.update()
 
     def update(self):
+        num = 0
         for stop in self.all_stops_numbers:
             trams = []
-            print('Processing:', stop, end="... ")
+            # print('Processing:', stop, end="... ")
             try:
                 page = urllib.request.urlopen(LINK + stop).read()\
                     .decode('utf-8', errors='ignore')
@@ -124,7 +125,7 @@ class TotalExtractor:
                 trams.append(line)
             # print(trams)
             self.all_trams[stop] = trams
-            print("OK")
+            # print("OK")
 
     def __str__(self):
         return str(self.all_trams)
