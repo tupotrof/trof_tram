@@ -1,49 +1,47 @@
-#!/usr/bin/env python3
-
 import sys
-import os
 import getopt
-import io
-import pickle
-from tram import extractors as ext
-from tram import delta_searcher as d
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-PATH_LENGTHS = 'resources/lengths.pickle'
+from tram.stop_search import stop_s
+from tram.help import get_help
+from tram.route_search import route_s
 
-def main():
-    all_routes = ['1', '2', '3', '4', '5', '5A', '6', '7', '8', '9', '10',
-                  '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-                  '21', '22', '23', '24', '25', '26', '27', '32', '33', '34']
-    total = ext.TotalExtractor(upd=True)
-    all_deltas = dict()
-    with open(PATH_LENGTHS, 'rb') as f:
-        all_data = pickle.load(f)
-    extractors = []
-    for route in all_routes:
-        extractors.append(ext.RouteExtractor(route))
-    for extractor in extractors:
-        extractor.take_from_total(total)
-        result = d.search(extractor)
-        for stop in result:
-            if result[stop]:
-                next_stop = extractor.get_next_stop(stop)
-                # kok = (int(stop) * 1000000) + int(next_stop)
-                kok = (stop, next_stop)
-                if not all_deltas.get(kok):
-                    all_deltas[kok] = []
-                all_deltas[kok].append(result[stop])
-
-    for k in all_deltas:
-        if not dict.get(all_data, k):
-            all_data[k] = []
-        all_data[k].extend(all_deltas[k])
-
-    print(all_data)
-
-    with open(PATH_LENGTHS, 'wb') as f:
-        pickle.dump(all_data, f)
+class Usage(Exception):
+    def __init__(self, msg):
+        self.msg = msg
 
 
-if __name__ == '__main__':
-    main()
+def work(option, args):
+    if option == '-h':
+        get_help()
+    elif option == '-s':
+        stop = args[0]
+        stop_s(stop)
+    elif option == '-r':
+        route = args[0]
+        route_s(route)
+
+    else:
+        raise Usage(AttributeError)
+
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+    try:
+        try:
+            opts, args = getopt.getopt(argv[1:],
+                                       "hsr", ["help", "stop", "route"])
+            print(opts)
+            print(args)
+            work(opts[0][0], args)
+        except getopt.error as msg:
+            raise Usage(msg)
+
+    except Usage as err:
+        print(sys.stderr, err.msg)
+        print(sys.stderr, "for help use --help")
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

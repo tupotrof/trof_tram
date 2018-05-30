@@ -4,11 +4,12 @@ import time
 import io
 import re
 import urllib
+import http.client
 from urllib.error import URLError
 from urllib.request import urlopen
 from .routes import extract_stops
 
-LINK = "http://online.ettu.ru/station/"
+LINK = "online.ettu.ru"
 STOPS = "resources/all_stops.kxt"
 
 RE = re.compile('<div>\s+<div style="width: .*?<b>(.*?)</b>.*?'
@@ -25,14 +26,19 @@ class StopExtractor:
 
     def update(self):
         try:
-            page = urllib.request.urlopen(LINK + str(self.stop_number)).read()\
-                .decode('utf-8', errors='ignore')
+            conn = http.client.HTTPConnection(LINK)
+            conn.request("GET", "/station/" + self.stop_number)
+            r1 = conn.getresponse()
+            page = r1.read().decode('utf-8', errors='ignore')
         except urllib.error.URLError:
             return
         self.closest_trams = []
         re_list = re.findall(RE, page)
         for line in re_list:
             self.closest_trams.append(line)
+
+    def get_results(self):
+        return self.closest_trams
 
     def __str__(self):
         return str(self.closest_trams)
@@ -42,7 +48,7 @@ class RouteExtractor:
     def __init__(self, num, upd=False):
         self.route_number = num
         self.stops = []
-        self.filename = "resources/number_routes/" + num + ".kxt"
+        self.filename = "tram/resources/number_routes/" + num + ".kxt"
         with io.open(self.filename, 'r', encoding='utf-8') as f:
             for line in f:
                 self.stops.append(line.split('|')[0])
@@ -57,8 +63,10 @@ class RouteExtractor:
             trams = []
             # print('Processing:', s)
             try:
-                page = urllib.request.urlopen(LINK + s).read()\
-                    .decode('utf-8', errors='ignore')
+                conn = http.client.HTTPConnection(LINK)
+                conn.request("GET", "/station/" + s)
+                r1 = conn.getresponse()
+                page = r1.read().decode('utf-8', errors='ignore')
             except urllib.error.URLError:
                 # print("Network error")
                 return False
@@ -114,8 +122,10 @@ class TotalExtractor:
             trams = []
             # print('Processing:', stop, end="... ")
             try:
-                page = urllib.request.urlopen(LINK + stop).read()\
-                    .decode('utf-8', errors='ignore')
+                conn = http.client.HTTPConnection(LINK)
+                conn.request("GET", "/station/" + stop)
+                r1 = conn.getresponse()
+                page = r1.read().decode('utf-8', errors='ignore')
             except urllib.error.URLError:
                 print("Network error")
                 continue

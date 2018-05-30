@@ -2,7 +2,7 @@
 import sys
 import getopt
 import io
-import extract_stops
+from tram.routes import extract_stops
 
 OUTPUT = "../resources/all_stops.kxt"
 
@@ -39,6 +39,30 @@ def distance(a, b):
     return current_row[n]
 
 
+def detect_stop(stops, line):
+    line = line.lower().rstrip('\n')
+    if line in REPLACES.keys():
+        print('<!> Item "', line, '" detected as "', REPLACES[line],
+              '" <!>', sep='')
+        line = REPLACES[line]
+    line = line.split(' (')[0]
+    s = dict.get(stops[1], line)
+    if s is None:  # не нашли остановку, ищем самую похожую
+        best_siml = 1000000
+        best_str = ''
+        for stop in stops[1].keys():
+            seq = distance(line, stop)
+            if seq < best_siml:
+                best_siml = seq
+                best_str = stop
+        print('<!> Item "', line, '" detected as "',
+              best_str, '" <!>', sep='')
+        s = dict.get(stops[1], best_str)
+        if s is None:
+            print('Not found: ', line)
+    return s
+
+
 def main(argv):
     inputfile = ''
     outputdir = ''
@@ -62,29 +86,10 @@ def main(argv):
     with io.open(inputfile, 'r', encoding='utf-8') as f:
         outputfile = outputdir + f.readline().rstrip('\n') + '.kxt'
         for line in f:
-            line = line.lower().rstrip('\n')
             if line == '[reverse]':  # типа чтобы остановки не переставлять
                 rev = False
                 continue
-            if line in REPLACES.keys():
-                print('<!> Item "', line, '" detected as "', REPLACES[line],
-                      '" <!>', sep='')
-                line = REPLACES[line]
-            line = line.split(' (')[0]
-            s = dict.get(stops[1], line)
-            if s is None:  # не нашли остановку, ищем самую похожую
-                best_siml = 1000000
-                best_str = ''
-                for stop in stops[1].keys():
-                    seq = distance(line, stop)
-                    if seq < best_siml:
-                        best_siml = seq
-                        best_str = stop
-                print('<!> Item "', line, '" detected as "',
-                      best_str, '" <!>', sep='')
-                s = dict.get(stops[1], best_str)
-                if s is None:
-                    print('Not found: ', line)
+            s = detect_stop(stops, line)
             data.append(s)
             # print(s)
     f.close()
