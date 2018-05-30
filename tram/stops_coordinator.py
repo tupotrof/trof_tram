@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from tram.extractors import *
+from tram.tram.extractors import *
 
 LINK = "online.ettu.ru"
 
