@@ -1,4 +1,4 @@
-import get_data
+from . import get_data
 
 
 def decode(wav, dest):

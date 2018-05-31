@@ -1,17 +1,18 @@
 import sys
 import getopt
 
-#from Help import help
-from Decoding import decode
-from Encoding import encode
+from wav.Decoding import decode
+from wav.Encoding import encode
+
 
 def help():
     print("Usage: ./wavcoder -h")
     print("  display this help and exit")
-    print("Usage: ./wavcoder -e <source> <code> <encode>")
+    print("Usage: ./wavcoder -e <source> <encode> <code>")
     print("  encodes WAV file <source> of file <code>, result in <encode>")
     print("Usage: ./wavcoder -d <encode> <code>")
     print("  decodes WAV file <encode> to file <code>")
+
 
 class Usage(Exception):
     def __init__(self, msg):
